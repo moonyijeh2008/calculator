@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <style>
+        .button {
+            padding: 10px;
+            width: 50px;
+            height: 50px;
+            margin: 5px;
+        }
+        #result {
+            margin-top: 10px;
+            font-size: 1.2em;
+        }
+        #historyDisplay {
+            margin-top: 10px;
+            font-size: 1.2em; /* 기록의 폰트 크기 확대 */
+            border: 1px solid #ccc;
+            padding: 10px;
+            width: 300px;
+            height: 200px;
+            overflow-y: auto;
+        }
+        .history-item {
+            cursor: pointer;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .history-item span {
+            margin: 0 5px;
+        }
+        .history-item:hover {
+            background-color: #b6b6b6;
+        }
+        .history-item .select-all {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
+    <script>
+        let historyLog = [];
+
+        function calculate(operation) {
+            var num1 = parseFloat(document.getElementById('number1').value) || 0; 
+            var num2 = parseFloat(document.getElementById('number2').value) || 0; 
+            var result;
+
+            switch(operation) {
+                case '+':
+                    result = num1 + num2;
+                    break;
+                case '-':
+                    result = num1 - num2;
+                    break;
+                case '*':
+                    result = num1 * num2;
+                    break;
+                case '/':
+                    result = num2 !== 0 ? num1 / num2 : 'Error (0으로 나눌 수 없습니다)';
+                    break;
+                default:
+                    result = '잘못된 연산';
+            }
+
+            document.getElementById('result').value = result;
+
+            let calculation = `${num1} ${operation} ${num2} = ${result}`;
+            historyLog.push(calculation);
+            updateHistoryDisplay();
+            clearNumberFields();
+        }
+
+        function updateHistoryDisplay() {
+            let historyDisplay = document.getElementById('historyDisplay');
+            historyDisplay.innerHTML = '';
+            historyLog.forEach((item, index) => {
+                let historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                let [num1, num2, equals, result] = item.split(' ');
+
+                historyItem.innerHTML = `<span class="select-all">>></span> <span class="num1">${num1}</span> ${operator} <span class="num2">${num2}</span> = <span class="result">${result}</span>`;
+
+                historyItem.querySelector('.select-all').onclick = function() {
+                    populateBothFields(num1, num2);
+                };
+
+                historyItem.querySelector('.num1').onclick = function() {
+                    populateNumberField(num1);
+                };
+                
+                historyItem.querySelector('.num2').onclick = function() {
+                    populateNumberField(num2);
+                };
+
+                historyItem.querySelector('.result').onclick = function() {
+                    populateNumberField(result);
+                };
+
+                historyDisplay.appendChild(historyItem);
+            });
+        }
+
+        function populateNumberField(value) {
+            if (document.getElementById('number1').value === '') {
+                document.getElementById('number1').value = value;
+            } else if (document.getElementById('number2').value === '') {
+                document.getElementById('number2').value = value;
+            }
+        }
+
+        function populateBothFields(value1, value2) {
+            document.getElementById('number1').value = value1;
+            document.getElementById('number2').value = value2;
+        }
+
+        function clearNumberFields() {
+            document.getElementById('number1').value = '';
+            document.getElementById('number2').value = '';
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (['+', '-', '*', '/'].includes(event.key)) {
+                event.preventDefault(); 
+                calculate(event.key); 
+            } else if (event.key === 'Enter') {
+                calculate('=');
+            }
+        });
+    </script>
+</head>
+<body>
+    <label for="number1">숫자 1:</label>
+    <input type="text" id="number1" value=""><br>
+    <label for="number2">숫자 2:</label>
+    <input type="text" id="number2" value=""><br>
+
+    <input type="button" value="+" onClick="calculate('+')" class="button">
+    <input type="button" value="-" onClick="calculate('-')" class="button">
+    <input type="button" value="*" onClick="calculate('*')" class="button">
+    <input type="button" value="/" onClick="calculate('/')" class="button"><br>
+
+    <label for="result">연산 결과:</label>
+    <input type="text" id="result" value="" readonly><br><br>
+
+    <div id="historyDisplay">
+        <strong>계산 기록:</strong><br>
+   </div>
+</body>
+</html>
